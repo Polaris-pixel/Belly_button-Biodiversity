@@ -1,3 +1,4 @@
+//Use the D3 library to read in json data and append values to dropdown menu
 var value = d3.json('samples.json').then(function(jsonData){
     console.log(jsonData);
     
@@ -13,7 +14,7 @@ var value = d3.json('samples.json').then(function(jsonData){
 
 });
   
-
+//Use `d3.json` to fetch the data for the plots and display
 function optionChanged(id){
     console.log(id);
     d3.json('samples.json').then(function(jsonData){
@@ -28,7 +29,7 @@ function optionChanged(id){
     var otuLabel = patientId.otu_labels;
 
 
-    
+    //Create the trace for bar plot
     var barplot = {
         x:sampleValue.slice(0,10).reverse(),
         y:otuId.slice(0,10).map(y=>"otu "+y).reverse(),
@@ -37,7 +38,15 @@ function optionChanged(id){
         orientation: 'h'
     };
 
-    var bubbles = {
+    // Define the plot layout for bar plot
+    var barlayout = {
+        title: "Sample value vs Otu Id",
+        xaxis: { title: "Sample Values" },
+        yaxis: { title: "Otu Ids" }
+    };
+
+    //Create the trace for bubble chart
+    var bubbleData = {
         x:otuId,
         y:sampleValue,
         text: otuLabel,
@@ -47,14 +56,21 @@ function optionChanged(id){
             color: otuId
         }
     };
-        
+    
+    // Define the plot layout for bubble chart
+    var bubblelayout = {
+        title: "Otu Id vs Sample value ",
+        xaxis: { title: "Otu Ids" },
+        yaxis: { title: "Sample Values" }
+    };
 
-    Plotly.newPlot('bar', [barplot]);
+    //Plot the charts
+    Plotly.newPlot('bar', [barplot], barlayout);
 
-    Plotly.newPlot('bubble', [bubbles]);
+    Plotly.newPlot('bubble', [bubbleData], bubblelayout);
 
 
-    ///metadata of patient
+    ///Metadata to display an individual's demographic information
     var demoData = d3.select('#sample-metadata');
     var demoInfo = jsonData.metadata.filter(x=> x.id==id)[0];
 
@@ -66,19 +82,28 @@ function optionChanged(id){
         });
    
 
-    //guage chart
-    var data = [
-	    {
-		domain: { x: [0, 1], y: [0, 1] },
-		value: demoInfo.wfreq,
-		title: { text: "Wash Frequency per week" },
-		type: "indicator",
-		mode: "gauge+number"
-	    }
-    ];
+    //Create the trace for guage chart
+    var guageData = 
+        {
+          domain: { x: [0, 1], y: [0, 1] },
+          value: demoInfo.wfreq,
+          title: { text: "Number of belly button washes per week" },
+          type: "indicator",
+          mode: "gauge+number",
+          
+          gauge: {
+            axis: { range: [null, 9] },
+            steps: [
+              { range: [0, 1], color:'lightgrey' },
+              
+            ],
+            
+          }
+        };      
 
-    var layout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
-    Plotly.newPlot('gauge', data, layout);
+    var guagelayout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
+
+    Plotly.newPlot('gauge', [guageData], guagelayout);
 });
 };
 
